@@ -191,3 +191,103 @@
 
 (define sorted-lst '(2 3 5 7 9 11))
 (print (insert 4 sorted-lst))
+
+(define (compute-rest n)
+	(print 'evaluating!)
+	(cons-stream n nil)
+)
+
+(define (has-even? s)
+	(cond 
+		((null? s) #f)
+		((even? (car s)) #t)
+		(else (has-even? (cdr-strem s)))
+
+	)
+)
+
+; Wirte a function map-stream, which takes a function f and a stream s. It returns a new stream 
+;	which has all the elements from s, but with f applied to each one.
+(define (map-stream f s)
+	(cond
+		((null? s) nil)
+		(else (cons-stream (f (car s)) (map-stream f (cdr-stream s))))
+	)
+)
+
+(define nats (cons-stream 2 (cons-stream 3 (cons-stream 5 nil))))
+(define evens (map-stream (lambda (x) (* x 2)) nats))
+
+(define (next s n)
+	(if (= n 0) (car s)
+		(next (cdr-stream s) (- n 1))
+	)
+)
+
+; Write a function range-stream which takes a start and end, 
+;	and returns a stream that represents the integers between start and end - 1 (inclusive)
+(define (range-stream start end)
+	(define (range-helper n)
+		(if 
+			(= n end) 
+				nil
+				(cons-stream n (range-helper (+ n 1)))
+		)
+	)
+	(range-helper start)
+)
+
+(define s (range-stream 1 5))
+
+; Write a function slice which takes in a stream s, a start, and an end. 
+;	It should return a Scheme list that contains the elements of s between index start and end, 
+;	not including end. If the stream ends before end, you can return nil. 
+(define (slice s start end)
+	(cond 
+		((= end 0) nil)
+		((= start 0) (cons (car s) (slice (cdr-stream s) 0 (- end 1))))
+		(else (slice (cdr-stream s) (- start 1) (- end 1)))
+	)
+)
+
+(define (naturals n)
+	(cons-stream n (naturals (+ n 1)))
+)
+
+(define nat (naturals 0))
+
+; return the stream of values (f xs ys) 
+(define (combine-with f xs ys)
+	(if (or (null? xs) (null? ys))
+		nil
+		(cons-stream
+			(f (car xs) (car ys))
+			(combine-with f (cdr-stream xs) (cdr-stream ys))
+		)
+	)
+)
+
+(define evens (combine-with + (naturals 0) (naturals 0)))
+
+(define factorials
+	(cons-stream 1 (combine-with * (naturals 1) factorials))
+)
+
+(define fibs
+	(cons-stream 0 (cons-stream 1 (combine-with + fibs (cdr-stream fibs))))
+)
+
+(define (pow n power)
+	(define (pow-tail power-tail number-so-far)
+		(if (= power-tail power)
+				number-so-far
+				(pow-tail (+ power-tail 1) (* number-so-far n))
+		)
+	)
+	(pow-tail 0 1)
+)
+
+(define (exp x)
+	(combine-with / (combine-with pow x (naturals 0)) factorials)
+)
+
